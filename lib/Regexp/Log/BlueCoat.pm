@@ -86,7 +86,7 @@ my $HOST = '[-.\\w]+';
 
     # %f   sc-filter-category Filtering reason. Why it was denied (such as sex or business) No
     # this is handled in _postprocess()
-    '%f' => '%f',
+    '%f' => '(?#=sc-filter-category)%f(?#!sc-filter-category)',
 
     # %g    timestamp UNIX type timestamp. Yes
     '%g' => '(?#=timestamp)\\d+\\.\\d+(?#!timestamp)',
@@ -609,10 +609,7 @@ sub _postprocess {
     # UFS specific regexps
     if ( defined $ufs and $ufs ne '' ) {
         my %categories = ( %{ $UFS{$ufs} }, %{ $self->{_ufs}{$ufs} } );
-        my $categories =
-          '(?#=sc-filter-category)'
-          . join ( '|', sort values %categories )
-          . '(?#!sc-filter-category)';
+        my $categories = join '|', sort values %categories;
         $self->{_regexp} =~ s/%f/$categories/g;
     }
 }
