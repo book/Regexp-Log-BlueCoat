@@ -1,6 +1,6 @@
-
-MANIFEST
-README
 Changes
-t/00basic.t
+MANIFEST
+Makefile.PL
+README
 lib/Regexp/Log/BlueCoat.pm
+t/00basic.t
