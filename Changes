@@ -1,4 +1,9 @@
 Revision history for Perl extension Regexp::Log::BlueCoat
 
+0.02  Mon Jan 20 18:48:53 CET 2003
+        - ufs_category() now returns the (class or instance) specific
+          hash that maps UFS categories to their textual representation
+        - and tests for that too
+
 0.01  Fri Jan 17 16:21:04 CET 2003
         - original version
