@@ -594,7 +594,6 @@ sub _postprocess {
 
     # UFS specific regexps
     if ( defined $ufs and $ufs ne '' ) {
-use Data::Dumper; print Dumper \%UFS;
         my %categories = ( %{ $UFS{$ufs} }, %{ $self->{_ufs}{$ufs} } );
         my $categories =
           '(?#=sc-filter-category)'
