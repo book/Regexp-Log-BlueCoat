@@ -2,5 +2,11 @@ Changes
 MANIFEST
 Makefile.PL
 README
+eg/notmatch.pl
 lib/Regexp/Log/BlueCoat.pm
 t/00basic.t
+t/10accessors.t
+t/20ufs.t
+t/30log_1.t
+t/bc1.log
+t/log1
