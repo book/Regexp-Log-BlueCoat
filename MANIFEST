@@ -9,4 +9,3 @@ t/10accessors.t
 t/20ufs.t
 t/30log_1.t
 t/bc1.log
-t/log1
