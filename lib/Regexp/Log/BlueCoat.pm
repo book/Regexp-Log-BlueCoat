@@ -10,6 +10,7 @@ $VERSION = 0.01;
     format  => '',
     capture => [],
     ufs     => '',
+    login   => '',
 );
 
 %FORMAT = (
@@ -86,7 +87,6 @@ my $HOST = '[-.\\w]+';
 '(?#=gmttime)-|\\[(?#=gmtday)\\d\\d(?#!gmtday)/(?#=gmtmonth)\\d\\d(?#!gmtmonth)/(?#=gmtyear)\\d\\d\\d\\d(?#!gmtyear):(?#=gmthour)\\d\\d(?#!gmthour):(?#=gmtminute)(?#!gmtminute):(?#=gmtsecond)(?#!gmtsecond) GMT\\](?#!gmttime)',
 
     # %u    cs-username Authenticated user ID. Yes
-    # This should create an error when 'login' is not defined
     '%u' => '(?### You must define \'login\' to use %u in format ###))',
 
     # %v    cs-host Name of host sourcing the object. Yes
@@ -243,6 +243,7 @@ Regexp::Log::BlueCoat's constructor accepts several BlueCoat specific
 arguments:
 
     ufs    - URL Filtering Service
+    login  - The type of username information
 
 Note: Though BlueCoat supports SmartFilter, Websense and others,
 Regexp::Log::BlueCoat only support I<SmartFilter> UFS in this version.
