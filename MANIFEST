@@ -1,0 +1,6 @@
+
+MANIFEST
+README
+Changes
+t/00basic.t
+lib/Regexp/Log/BlueCoat.pm
