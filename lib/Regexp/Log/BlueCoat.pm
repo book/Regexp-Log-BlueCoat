@@ -120,7 +120,7 @@ my $HOST = '[-.\\S]+';
 
 # %r    cs-request-line First line of the request No
 # %s    sc-status The code returned by the cache to the client (HTTP code).  Yes
-    '%s' => '(?#=sc-status)\\d{1,3}(?#!sc-status)',
+    '%s' => '(?#=sc-status)\\d{1,4}(?#!sc-status)',
 
 # %t    gmttime GMT date and time of the user request, in the format [DD/MM/YYYY:hh:mm:ss GMT] Yes
     '%t' =>
