@@ -66,7 +66,6 @@ my $HOST = '[-.\\w]+';
 # define the BlueCoat specific stuff
 %REGEXP = (
 
-    #%g %e %a %w/%s %b %m %i %u %H/%d %c %f %A
     # %% - Denotes '%' character -
     '%%' => '%',
 
@@ -359,65 +358,91 @@ Format string: C<%a, -, %x, %y, %S, %N, %I, %e, %b, %B, %s, 0, %m, %U, ->
 
 =head2 Blue Coat custom format
 
-(This is from Blue Coat's documentation.)
+Not all C<%>-escapes are supported in this version of Regexp::Log::BlueCoat.
+ELFF is not supported yet.
 
-space character N/A Multiple consecutive spaces are compressed to a single space Yes
+Multiple consecutive spaces in the format string are compressed to
+a single space.
 
- Name ELFF
- ------------------------------------------------------------------------
- %    -          Denotes an expansion field -
- %%   -          Denotes '%' character -
- %a   c-ip Client IP address. Yes
- %b   sc-bytes Number of bytes returned by the server (or the Cache).  Yes
- %c   cs (content-type) The type of object. Usually the MIME-type. No
- %d   cs-supplier-name SUPPLIER NAME - Name or IP address of the server/cache from which the object was received.  Yes
- %e   time-taken Number of milliseconds request took to process.  Yes
- %f   sc-filter-category Filtering reason. Why it was denied (such as sex or business) No
- %g    timestamp UNIX type timestamp. Yes
- %h    c-ip Client Hostname (uses IP to avoid reverse DNS) - same as %a Yes
- %i    cs-uri The requested URI. Note: Web trends expects this to be only cs-uri-stem + cs-uri-query No
- %j    -  [Not used.] -
- %l    - Client Identification string. (User Login name remote). - always '-' Yes
- %m    cs-method HTTP method. HTTP methods include GET, PUT, POST, and so on.  Yes
- %n    - [Not used.] -
- %o    - [Not used.] -
- %p    r-port Port fetched from on host - origin server port Yes
- %q    - [Not used.] -
- %r    cs-request-line First line of the request No
- %s    sc-status The code returned by the cache to the client (HTTP code).  Yes
- %t    gmttime GMT date and time of the user request, in the format [DD/MM/YYYY:hh:mm:ss GMT] Yes
- %u    cs-username Authenticated user ID. Yes
- %v    cs-host Name of host sourcing the object. Yes
- %w    s-action What type of action did the CM take to process this request. NOTE: 'cached' is used by ELFF but has int value.  Yes
- %x    date Date in YYYY-MM-DD format Yes
- %y    time GMT time in HH:MM:SS format No
- %z    - [Not used.] -
- %A    cs (user-agent) User agent No
- %B    cs-bytes The number of bytes received by the server Yes
- %C    cs (cookie) Cookie data No
- %D    s-supplier-ip SUPPLIER IP - IP address of server/cache from which the object was received.  Yes
- %E    s-Policy-Message Policy enforcement message Yes
- %F    - [Not used.] -
- %G    - [Not used.] -
- %H    s-hierarchy How and where the object was retrieved from the cache hierarchy (DIRECT from the server, PARENT_HIT = from the parent cache, and so on) No
- %I    s-ip Server IP, the IP address of the server on which the log entry was generated Yes
- %J    - [Not used.] -
- %K    - [Not used.] -
- %L    localtime Local date and time of the user request in format: [DD/MMM/YYYY:hh:mm:ss +nnnn] Yes
- %M    - [Not used.] -
- %N    s-computername Server name, the name of the server on which the log entry was generated Yes
- %O    - [Not used.] -
- %P    s-port Server port, the port number the client is connected to.  Yes
- %Q    cs-uri-query The URI query portion of the URL No
- %R    cs (Referer) Request referrer No
- %S    s-sitename Internet service and instance number running on client computer Yes
- %T    duration Elapsed time, seconds Yes
- %U    cs-uri-stem Object path from request URL Yes
- %V    cs-version The protocol (HTTP, FTP) version used by the client.  Yes
- %W    sc-filter-result UFS event (May differ between Websense or SmartFilter or others).  No
- %X    cs (X-Forwarded-For) The IP address of the device which sent the HTTP request.  No
- %Y    - [Not used.] -
- %Z    - [Not used.] -
+The following list is straight from Blue Coat's documentation.
+
+ Name ELFF                  Description
+ ---- ----                  -----------
+ %    -                     Denotes an expansion field.
+ %%   -                     Denotes '%' character.
+ %a   c-ip                  Client IP address. 
+ %b   sc-bytes              Number of bytes returned by the server
+                            (or the Cache).
+ %c   cs (content-type)     The type of object. Usually the MIME-type.
+ %d   cs-supplier-name      SUPPLIER NAME - Name or IP address of the
+                            server/cache from which the object was received.
+ %e   time-taken            Number of milliseconds request took to process.
+ %f   sc-filter-category    Filtering reason. Why it was denied (such as
+                            sex or business)
+ %g    timestamp            UNIX type timestamp.
+ %h    c-ip                 Client Hostname (uses IP to avoid reverse DNS)
+                            - same as %a
+ %i    cs-uri               The requested URI. Note: Web trends expects
+                            this to be only cs-uri-stem + cs-uri-query
+ %j    -                    [Not used.]
+ %l    -                    Client Identification string.
+                            (User Login name remote). - always '-'
+ %m    cs-method            HTTP method. HTTP methods include GET, PUT,
+                            POST, and so on.
+ %n    -                    [Not used.]
+ %o    -                    [Not used.]
+ %p    r-port Port          fetched from on host - origin server port
+ %q    -                    [Not used.]
+ %r    cs-request-line      First line of the request
+ %s    sc-status            The code returned by the cache to the client
+                            (HTTP code). 
+ %t    gmttime              GMT date and time of the user request, in
+                            the format [DD/MM/YYYY:hh:mm:ss GMT]
+ %u    cs-username          Authenticated user ID.
+ %v    cs-host              Name of host sourcing the object.
+ %w    s-action             What type of action did the CM take to process
+                            this request. NOTE: 'cached' is used by ELFF
+                            but has int value.
+ %x    date                 Date in YYYY-MM-DD format
+ %y    time                 GMT time in HH:MM:SS format
+ %z    -                    [Not used.]
+ %A    cs (user-agent)      User agent
+ %B    cs-bytes             The number of bytes received by the server
+ %C    cs (cookie)          Cookie data
+ %D    s-supplier-ip        SUPPLIER IP - IP address of server/cache from
+                            which the object was received.
+ %E    s-Policy-Message     Policy enforcement message
+ %F    -                    [Not used.]
+ %G    -                    [Not used.]
+ %H    s-hierarchy          How and where the object was retrieved from the
+                            cache hierarchy (DIRECT from the server,
+                            PARENT_HIT = from the parent cache, and so on) 
+ %I    s-ip                 Server IP, the IP address of the server on which
+                            the log entry was generated
+ %J    -                    [Not used.]
+ %K    -                    [Not used.]
+ %L    localtime            Local date and time of the user request in
+                            format: [DD/MMM/YYYY:hh:mm:ss +nnnn]
+ %M    -                    [Not used.]
+ %N    s-computername       Server name, the name of the server on which
+                            the log entry was generated
+ %O    -                    [Not used.]
+ %P    s-port               Server port, the port number the client is
+                            connected to.
+ %Q    cs-uri-query         The URI query portion of the URL
+ %R    cs (Referer)         Request referrer
+ %S    s-sitename           Internet service and instance number running
+                            on client computer
+ %T    duration             Elapsed time, seconds
+ %U    cs-uri-stem          Object path from request URL
+ %V    cs-version           The protocol (HTTP, FTP) version used by
+                            the client.
+ %W    sc-filter-result     UFS event (May differ between Websense or
+                            SmartFilter or others).
+ %X    cs (X-Forwarded-For) The IP address of the device which sent
+                            the HTTP request.
+ %Y    -                    [Not used.]
+ %Z    -                    [Not used.]
 
 =head1 URL FILTERING SYSTEMS
 
@@ -443,18 +468,24 @@ are several possibilities:
 
 =over 4
 
-=item Use ufs_category()
+=item Make the changes in your object instance
 
 The method ufs_category() lets you replace any standard category by
-your own, and even add new "categories" (read: text that will be
-matched by the C<%f> fields).
+your own, and even add new "categories" (text that will be matched by
+the C<%f> fields).
 
-These changes are valid for the 
+These changes are valid for the object only.
 
 See ufs_category() for details.
 
-=item Chanfe
+=item Change the class itself
 
+ufs_category() can be used as a class method.
+
+One can also acces %Regexp::Log::BlueCoat::UFS directly, but you'll
+need to read the source to understand the details.
+
+=back
 
 I<SmartFilter> default categories are:
 
@@ -605,20 +636,21 @@ sub _postprocess {
 
 =head1 TODO
 
-Support BlueCoat's standard formats: NCSA common log format,
-Squid-compatible format, WC3 Extended Log File Format, custom.
+Support streaming logs: Windows Media and RealMedia.
+
+Support the W3C Extended Log File Format (ELFF), which is a subset of
+the Blue Coat format where each field is described using a text string.
 
 Have a look at the entries that produce multi-line logs.
-
-Support streaming logs: Windows Media and RealMedia.
 
 =head1 BUGS
 
 Most of the developpement has been done when I was trying to process
-logs with the following format: C<%g %e %a %w/%s %b %m %i %u %H/%d %c %f %A>.
+logs created with the following format:
+C<%g %e %a %w/%s %b %m %i %u %H/%d %c %f %A>.
 
 Which means that the regular expressions that this module produces do not
-cover each and every possible format.r
+cover every possible format.
 
 If Regexp::Log::BlueCoat's regular expressions do not match some of the
 log that you are trying to munge, please use the F<eg/notmatch.pl> script
