@@ -57,7 +57,7 @@ my @data = (
         'time-taken'  => '182',
         'cs-uri'      => 'http://wwwsantéobésité.com/perl/main.pl',
         's-hierarchy' => 'DIRECT',
-        'cs-username' => 'CN=Georges BUSH,OU=fr,O=states',
+        'cs-username' => 'CN=George BUSH,OU=fr,O=states',
         'cs-supplier-name'   => 'wwwsantéobésité.com',
         's-action'           => 'TCP_NC_MISS',
         'sc-filter-category' => 'uncategorized',
