@@ -55,7 +55,7 @@ is configured to log those events.
 
     next if /^(?:Windows_Media|<RealMedia>)/;
 
-This will probably be faster than have the regular expression generated
+This may or may not be faster than have the regular expression generated
 by the regexp() method fail on each streaming log line.
 
 =cut
@@ -233,7 +233,7 @@ return the new value for the attribute).
 
 =over 4
 
-=item ufs()
+=item ufs( [$ufs] )
 
 Get/set the URL Filter System type (C<%f> and C<%W>).
 Only C<smartfilter> is supported in this version.
@@ -319,31 +319,12 @@ Regexp::Log::BlueCoat supports several standards log formats.
 These can be set up by using their short name as the format string,
 with the format() method.
 
-=over 4
-
-=item Squid log format
-
-Short name: C<:squid>
-
-Format string: C<%g %e %a %w/%s %b %m %i %u %H/%d %c>
-
-=item NCSA common log format
-
-Short name: C<:clf>
-
-Format string: C<%h %l %u %t "%r" %s %b>
-
-=item NCSA extended log format
-
-Short name: C<:elf>
-
-Format string: C<%h %l %u %L "%r" %s %b "%R" "%A">
-
-=item Microsoft IIS format
-
-Short name: C<:iis>
-
-Format string: C<%a, -, %x, %y, %S, %N, %I, %e, %b, %B, %s, 0, %m, %U, ->
+ Description               Name    Format String
+ -----------               ----    -------------
+ Squid log format          :squid  %g %e %a %w/%s %b %m %i %u %H/%d %c
+ NCSA common log format    :clf    %h %l %u %t "%r" %s %b
+ NCSA extended log format  :elf    %h %l %u %L "%r" %s %b "%R" "%A"
+ Microsoft IIS format      :iis    %a, -, %x, %y, %S, %N, %I, %e, %b, %B, %s, 0, %m, %U, -
 
 =back
 
@@ -449,13 +430,13 @@ The following list is straight from Blue Coat's documentation.
 =head1 URL FILTERING SYSTEMS
 
 The BlueCoat Systems Port 80 Security Appliance supports two URL Filtering
-Systems (UFS): I<SmartFilter> and I<Websens>.
+Systems (UFS): I<SmartFilter> and I<Websense>.
 
 Since I only had access to log files generated with a BlueCoat + SmartFilter
 combination, this version of Regexp::Log only supports I<SmartFilter> UFS.
 Patches welcome!
 
-=head2 Smartfilter
+=head2 SmartFilter
 
 When C<ufs> is set to C<smartfilter>, the computed regular expression
 matches the default SmartFilter category names. These can be changed 
@@ -480,12 +461,15 @@ These changes are valid for the object only.
 
 See ufs_category() for details.
 
-=item Change the class itself
+=item Change the Regexp::Log::BlueCoat class itself
 
 ufs_category() can be used as a class method.
 
-One can also acces %Regexp::Log::BlueCoat::UFS directly, but you'll
-need to read the source to understand the details.
+One can also be adventurous and acces %Regexp::Log::BlueCoat::UFS directly,
+but you'll need to read the source to understand the details.
+Here's an example:
+
+    $Regexp::Log::UFS{smartfilter} = { simple => '[-\\w]+' };
 
 =back
 
@@ -545,7 +529,8 @@ Regexp::Log::BlueCoat add the following three categories:
 
 =head2 Websense
 
-I<Websense> is not supported yet.
+I<Websense> is not supported yet. Patches and log file excerpts are
+welcome.
 
 =cut
 
