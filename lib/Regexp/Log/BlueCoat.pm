@@ -22,14 +22,18 @@ $VERSION = 0.01;
 # define the BlueCoat specific stuff
 %REGEXP = (
 
+#%g %e %a %w/%s %b %m %i %u %H/%d %c %f %A
     # %% - Denotes '%' character -
     '%%' => '%',
 
     # %a   c-ip Client IP address. Yes
     '%a' => '(?#c-ip)\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}(?#!c-ip)',
     # %b   sc-bytes Number of bytes returned by the server (or the Cache).  Yes
+    '%b' => '(?#sc-bytes)\d+(?#!sc-bytes)',
     # %c   cs (content-type) The type of object. Usually the MIME-type. No
+    '%c' => '(?#cs-content-type)-|UNKNOWN|\\S+/\\S+(?#!cs-content-type)',
     # %d   cs-supplier-name SUPPLIER NAME - Name or IP address of the server/cache from which the object was received.  Yes
+    '%d' => '(?#cs-supplier-name)(?:\d+\.|[-\w]+\.)+(?#!cs-supplier-name)',
     # %e   time-taken Number of milliseconds request took to process.  Yes
     '%e' => '(?#time-taken)\\d+(?#!time-taken)',
 
@@ -41,9 +45,10 @@ $VERSION = 0.01;
     '%g' => '(?#timestamp)\d+\.\d+(?#!timestamp)',
 
     # %h    c-ip Client Hostname (uses IP to avoid reverse DNS) - same as %a Yes
-    '%h' => '(?#c-hostname)[-.\w]+(?#!c-hostname)',
+    '%h' => '(?#c-hostname)(?:\d+\.|[-\w+]\.)+(?#!c-hostname)',
 
     # %i    cs-uri The requested URI. Note: Web trends expects this to be only cs-uri-stem + cs-uri-query No
+    '%i' => '(?#cs-uri)\\S+://\\S+(?#!cs-uri)',
     # %j    -  [Not used.] -
     '%j' => '',
 
@@ -72,6 +77,7 @@ $VERSION = 0.01;
 '\\[(?#gmttime)(?#day)\\d\\d(?#!day)/(?#month)\\d\\d(?#!month)/(?#year)\\d\\d\\d\\d(?#!year):(?#hour)\\d\\d(?#!hour):(?#minute)(?#!minute):(?#second)(?#!second) GMT(?#!gmttime)\\]',
 
     # %u    cs-username Authenticated user ID. Yes
+    '%u' => '(?{croak "You must define \'login\' to use %u in format"})',
     # %v    cs-host Name of host sourcing the object. Yes
     # %w    s-action What type of action did the CM take to process this request. NOTE: 'cached' is used by ELFF but has int value.  Yes
     '%w' =>
@@ -96,6 +102,8 @@ $VERSION = 0.01;
     '%G' => '',
 
     # %H    s-hierarchy How and where the object was retrieved from the cache hierarchy (DIRECT from the server, PARENT_HIT = from the parent cache, and so on) No
+    '%H' => '(?#s-hierarchy)DIRECT|NONE|(?:PARENT|SIBLING)_HIT|FIRST_PARENT_MISS(?#!s-hierarchy)',
+
     # %I    s-ip Server IP, the IP address of the server on which the log entry was generated Yes
     # %J    - [Not used.] -
     '%J' => '',
@@ -140,6 +148,10 @@ $VERSION = 0.01;
     '%f-smartfilter' =>
 '(?#sc-filter-category)-|uncategorized|content_filter_not_applied|Anonymizer/Translator|Art/Culture|Chat|Criminal_Skills|Cults/Occult|Dating|Drugs|Entertainment|Obscene/Extreme|Gambling|Games|General_News|Hate_Speech|Humor|Investing|Job_Search|Lifestyle|Mature|MP3_Sites|Nudity|Online_Sales|Personal|Politics/Religion|Portal_Sites|Self_Help/Health|Sex|Sports|Travel|Usenet_News|Webmail(?#!sc-filter-category)',
     '%W-smartfilter' => '\w+',    # TODO find something better
+
+    # Login specific
+    '%u-username' => '(?#cs-username)[-.\w]+(?#!cs-username)',
+    '%u-ldap'     => '(?#cs-username)-|(?:[A-Za-z]=[^,]*,?)+(?#!cs-username)',
 );
 
 =pod
@@ -159,11 +171,15 @@ $VERSION = 0.01;
 
 sub _preprocess {
     my $self = shift;
-    my $ufs  = $self->{ufs};
+    my ( $ufs, $login ) = ( $self->{ufs}, $self->{login} );
 
     # UFS specific regexps
     $self->{_regexp} =~ s/%([fW])/%$1-$ufs/g
-      if ( $ufs =~ /^(?:smartfilter|websense)$/ );
+      if $ufs        =~ /^(?:smartfilter|websense)$/;
+
+    # Login specific regexps
+    $self->{_regexp} =~ s/%u/%u-$login/g
+      if $login      =~ /^(?:ldap|username)$/;
 
     # Multiple consecutive spaces are compressed to a single space
     $self->{_regexp} =~ s/ +/ /g;
@@ -304,6 +320,11 @@ Example Access Log Formats
 
 Support BlueCoat's standard formats: NCSA common log format,
 Squid-compatible format, WC3 Extended Log File Format, custom.
+
+=head1 REFERENCES
+
+Blue Coat Systems Port 80 Security Appliance, I<Configuration and Management
+Guide>: http://www.bluecoat.com/downloads/manuals/BC_Config_Mgmt_Guide.pdf
 
 =head1 THANKS
 
