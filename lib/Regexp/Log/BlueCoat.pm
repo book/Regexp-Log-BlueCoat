@@ -171,7 +171,7 @@ my $HOST = '[-.\\w]+';
 '(?#sc-filter-category)-|uncategorized|content_filter_not_applied|Anonymizer/Translator|Art/Culture|Chat|Criminal_Skills|Cults/Occult|Dating|Drugs|Entertainment|Obscene/Extreme|Gambling|Games|General_News|Hate_Speech|Humor|Investing|Job_Search|Lifestyle|Mature|MP3_Sites|Nudity|Online_Sales|Personal|Politics/Religion|Portal_Sites|Self_Help/Health|Sex|Sports|Travel|Usenet_News|Webmail(?#!sc-filter-category)',
     '%W-smartfilter1' => '\\S+',    # TODO find something better
     '%f-smartfilter2' =>
-'(?#sc-filter-category)-|art|chat|crime|dating|drugs|entertainment|extreme|gambling|games|general-news|humor|investments|jobs|life-style|news-site|opinion|personal|sales|self-help|sex|sports|travel|\\S+(?#!sc-filter-category)',
+'(?#sc-filter-category)-|art|chat|crime|dating|drugs|entertainment|extreme|gambling|games|general-news|hate-speech|humor|investments|jobs|life-style|news-site|opinion|personal|sales|self-help|sex|sports|travel|\\S+(?#!sc-filter-category)',
     '%W-smartfilter2' => '\\S+',    # TODO find something better
 
     # Login specific
