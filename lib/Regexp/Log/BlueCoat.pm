@@ -2,6 +2,7 @@ package Regexp::Log::BlueCoat;
 
 use strict;
 use Carp;
+use Regexp::Log;
 use base qw( Regexp::Log );
 use vars qw( $VERSION %DEFAULT %FORMAT %REGEXP %UFS );
 
