@@ -6,7 +6,7 @@ use Regexp::Log;
 use base qw( Regexp::Log );
 use vars qw( $VERSION %DEFAULT %FORMAT %REGEXP %UFS );
 
-$VERSION = 0.01;
+$VERSION = 0.02;
 
 =head1 NAME
 
@@ -262,6 +262,9 @@ The changes are applied on the objet current C<ufs>.
 
 See L<URL FILTERING SYSTEMS> for details about the category names.
 
+When called without arguments, ufs_category() will return the whole
+category list for the instance.
+
 =item ufs_category( ufs_name, category => string, [...] )
 
 This method can also be called as a class method.
@@ -281,19 +284,32 @@ modifications.
 
 These changes will be on for any new Regexp::Log::Object you'll create.
 
+When called with a single argument, ufs_category() will return the whole
+category list for the specified UFS for the class.
+
 =cut
 
 sub ufs_category {
     my $self = shift;
 
+    # instance method
     if ( ref $self ) {
-        my %ufs = @_;
-        @{ $self->{_ufs}{ $self->{ufs} } }{ keys %ufs } = values %ufs;
+        my $ufs = $self->{ufs};
+        if (@_) {
+            my %ufs = @_;
+            @{ $self->{_ufs}{$ufs} }{ keys %ufs } = values %ufs;
+        }
+        else { return ( %{ $UFS{$ufs} }, %{ $self->{_ufs}{$ufs} } ) }
     }
+
+    # class method
     else {
         my $ufs = shift;
-        my %ufs = @_;
-        @{ $UFS{$ufs} }{ keys %ufs } = values %ufs;
+        if (@_) {
+            my %ufs = @_;
+            @{ $UFS{$ufs} }{ keys %ufs } = values %ufs;
+        }
+        else { return %{ $UFS{$ufs} } }
     }
 }
 
