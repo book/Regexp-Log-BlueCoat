@@ -1,206 +1,11 @@
 package Regexp::Log::BlueCoat;
 
 use strict;
+use Carp;
 use base qw( Regexp::Log );
-use vars qw( $VERSION %DEFAULT %FORMAT %REGEXP );
+use vars qw( $VERSION %DEFAULT %FORMAT %REGEXP %UFS );
 
 $VERSION = 0.01;
-
-%DEFAULT = (
-    format  => '',
-    capture => [],
-    ufs     => '',
-    login   => '',
-);
-
-%FORMAT = (
-    ':squid' => '%g %e %a %w/%s %b %m %i %u %H/%d %c',
-    ':clf'   => '%h %l %u %t "%r" %s %b',
-    ':elf'   => '%h %l %u %L "%r" %s %b "%R" "%A"',
-    ':iis'   => '%a, -, %x, %y, %S, %N, %I, %e, %b, %B, %s, 0, %m, %U, -',
-);
-
-my $IP   = '\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}';
-my $HOST = '[-.\\w]+';
-
-# define the BlueCoat specific stuff
-%REGEXP = (
-
-    #%g %e %a %w/%s %b %m %i %u %H/%d %c %f %A
-    # %% - Denotes '%' character -
-    '%%' => '%',
-
-    # %a   c-ip Client IP address. Yes
-    '%a' => "(?#=c-ip)$IP(?#!c-ip)",
-
-    # %b   sc-bytes Number of bytes returned by the server (or the Cache).  Yes
-    '%b' => '(?#=sc-bytes)-|\\d+(?#!sc-bytes)',
-
-    # %c   cs (content-type) The type of object. Usually the MIME-type. No
-    '%c' => '(?#=cs-content-type)-|UNKNOWN|\\S+(?:/\\S+)?(?#!cs-content-type)',
-
-    # %d   cs-supplier-name SUPPLIER NAME - Name or IP address of the server/cache from which the object was received.  Yes
-    '%d' => "(?#=cs-supplier-name)-|$HOST(?#!cs-supplier-name)",
-
-    # %e   time-taken Number of milliseconds request took to process.  Yes
-    '%e' => '(?#=time-taken)\\d+(?#!time-taken)',
-
-    # %f   sc-filter-category Filtering reason. Why it was denied (such as sex or business) No
-    # TODO check in which Perl version (?{}) appears
-    '%f' => '(?### You must define \'ufs\' to use %f in format ###))',
-
-    # %g    timestamp UNIX type timestamp. Yes
-    '%g' => '(?#=timestamp)\\d+\\.\\d+(?#!timestamp)',
-
-    # %h    c-ip Client Hostname (uses IP to avoid reverse DNS) - same as %a Yes
-    '%h' => "(?#=c-hostname)-|$HOST(?#!c-hostname)",
-
-    # %i    cs-uri The requested URI. Note: Web trends expects this to be only cs-uri-stem + cs-uri-query No
-    '%i' => '(?#=cs-uri)-|\\S+://\\S+|.*?(?#!cs-uri)',
-
-    # %j    -  [Not used.] -
-    '%j' => '',
-
-    # %l    - Client Identification string. (User Login name remote). - always '-' Yes
-    # %m    cs-method HTTP method. HTTP methods include GET, PUT, POST, and so on.  Yes
-    '%m' =>
-'(?#=cs-method)-|OPTIONS|GET|HEAD|POST|PUT|DELETE|TRACE|CONNECT(?#!cs-method)',
-
-    # %n    - [Not used.] -
-    '%n' => '',
-
-    # %o    - [Not used.] -
-    '%o' => '',
-
-    # %p    r-port Port fetched from on host - origin server port Yes
-    '%p' => '(?#=r-port)\\d+(?#!r-port)',
-
-    # %q    - [Not used.] -
-    '%q' => '',
-
-    # %r    cs-request-line First line of the request No
-    # %s    sc-status The code returned by the cache to the client (HTTP code).  Yes
-    '%s' => '(?#=sc-status)\\d{1,3}(?#!sc-status)',
-
-    # %t    gmttime GMT date and time of the user request, in the format [DD/MM/YYYY:hh:mm:ss GMT] Yes
-    '%t' =>
-'(?#=gmttime)-|\\[(?#=gmtday)\\d\\d(?#!gmtday)/(?#=gmtmonth)\\d\\d(?#!gmtmonth)/(?#=gmtyear)\\d\\d\\d\\d(?#!gmtyear):(?#=gmthour)\\d\\d(?#!gmthour):(?#=gmtminute)(?#!gmtminute):(?#=gmtsecond)(?#!gmtsecond) GMT\\](?#!gmttime)',
-
-    # %u    cs-username Authenticated user ID. Yes
-    '%u' => '(?### You must define \'login\' to use %u in format ###))',
-
-    # %v    cs-host Name of host sourcing the object. Yes
-    # %w    s-action What type of action did the CM take to process this request. NOTE: 'cached' is used by ELFF but has int value.  Yes
-    '%w' =>
-'(?#=s-action)(?:TCP_(?:CLIENT_REFRESH|DENIED|ERR_MISS|HIT|M(?:EM_HIT|ISS)|NC_MISS|PARTIAL_MISS|REFRESH_(?:HIT|MISS)|S(?:PLASHED|WAPFAIL)|TUNNELED)?|UDP_(?:DENIED|HIT|INVALID|MISS(?:_NOFETCH)?)?)(?#!s-action)',
-
-    # %x    date Date in YYYY-MM-DD format Yes
-    '%x' =>
-'(?#=date)(?#=year)\\d\\d\\d\\d(?#!year)-(?#=month)\\d\\d(?#!month)-(?#=day)\\d\\d(?#!day)(?#!date)',
-
-    # %y    time GMT time in HH:MM:SS format No
-    '%y' =>
-'(?#=time)(?#=hour)\\d\\d(?#!hour):(?#=minute)\\d\\d(?#!minute):(?#=second)\\d\\d(?#!second)(?#!time)',
-
-    # %z    - [Not used.] -
-    '%z' => '',
-
-    # %A    cs (user-agent) User agent No
-    '%A' => '(?#=user-agent).*(?#!user-agent)',
-
-    # %B    cs-bytes The number of bytes received by the server Yes
-    '%b' => '(?#=cs-bytes)\\d+(?#!cs-bytes)',
-
-    # %C    cs (cookie) Cookie data No
-    # %D    s-supplier-ip SUPPLIER IP - IP address of server/cache from which the object was received.  Yes
-    # %E    s-Policy-Message Policy enforcement message Yes
-    # %F    - [Not used.] -
-    '%F' => '',
-
-    # %G    - [Not used.] -
-    '%G' => '',
-
-    # %H    s-hierarchy How and where the object was retrieved from the cache hierarchy (DIRECT from the server, PARENT_HIT = from the parent cache, and so on) No
-    '%H' =>
-'(?#=s-hierarchy)DIRECT|NONE|(?:PARENT|SIBLING)_HIT|FIRST_PARENT_MISS(?#!s-hierarchy)',
-
-    # %I    s-ip Server IP, the IP address of the server on which the log entry was generated Yes
-    # %J    - [Not used.] -
-    '%J' => '',
-
-    # %K    - [Not used.] -
-    '%K' => '',
-
-    # %L    localtime Local date and time of the user request in format: [DD/MMM/YYYY:hh:mm:ss +nnnn] Yes
-    '%L' =>
-'\\[(?#=localtime)(?#=localday)\\d\\d(?#!localday)/(?#=localmonth)\\d\\d(?#!localmonth)/(?#=localyear)\\d\\d\\d\\d(?#!localyear):(?#=localhour)\\d\\d(?#!localhour):(?#=localminute)\\d\\d(?#!localminute):(?#=localsecond)\\d\\d(?#!localsecond) \\+\\d\\d\\d\\d(?#!localtime)\\]',
-
-    # %M    - [Not used.] -
-    '%M' => '',
-
-    # %N    s-computername Server name, the name of the server on which the log entry was generated Yes
-    '%N' => "(?#=s-computername)$HOST(?#!s-computername)",
-
-    # %O    - [Not used.] -
-    '%O' => '',
-
-    # %P    s-port Server port, the port number the client is connected to.  Yes
-    '%P' => '(?#=s-port)\\d+(?#!s-port)',
-
-    # %Q    cs-uri-query The URI query portion of the URL No
-    # %R    cs (Referer) Request referrer No
-    # %S    s-sitename Internet service and instance number running on client computer Yes
-    # %T    duration Elapsed time, seconds Yes
-    '%T' => '(?#=duration)\\d+(?#!duration)',
-
-    # %U    cs-uri-stem Object path from request URL Yes
-    # %V    cs-version The protocol (HTTP, FTP) version used by the client.  Yes
-    # %W    sc-filter-result UFS event (May differ between Websense or SmartFilter or others).  No
-    '%W' => '(?{croak "You must define \'ufs\' to use %W in format"})',
-
-    # %X    cs (X-Forwarded-For) The IP address of the device which sent the HTTP request.  No
-    # %Y    - [Not used.] -
-    '%Y' => '',
-
-    # %Z    - [Not used.] -
-    '%Z' => '',
-
-    # UFS specific
-    # Smartfilter
-    '%f-smartfilter1' =>
-'(?#=sc-filter-category)-|uncategorized|content_filter_not_applied|Anonymizer/Translator|Art/Culture|Chat|Criminal_Skills|Cults/Occult|Dating|Drugs|Entertainment|Obscene/Extreme|Gambling|Games|General_News|Hate_Speech|Humor|Investing|Job_Search|Lifestyle|Mature|MP3_Sites|Nudity|Online_Sales|Personal|Politics/Religion|Portal_Sites|Self_Help/Health|Sex|Sports|Travel|Usenet_News|Webmail(?#!sc-filter-category)',
-    '%W-smartfilter1' => '\\S+',    # TODO find something better
-    '%f-smartfilter2' =>
-'(?#=sc-filter-category)-|art|chat|crime|dating|drugs|entertainment|extreme|gambling|games|general-news|hate-speech|humor|investments|jobs|life-style|news-site|opinion|personal|sales|self-help|sex|sports|travel|\\S+(?#!sc-filter-category)',
-    '%W-smartfilter2' => '\\S+',    # TODO find something better
-
-    # Login specific
-    '%u-username' => '(?#=cs-username)[-.\\w]+(?#!cs-username)',
-    '%u-ldap'     =>
-      '(?#=cs-username)-|(?:[A-Za-z]+=[^,]*,)*[A-Za-z]=[^,]*?(?#!cs-username)',
-);
-
-sub _preprocess {
-    my $self = shift;
-    my ( $ufs, $login ) = ( $self->{ufs}, $self->{login} );
-
-    # UFS specific regexps
-    $self->{_regexp} =~ s/%([fW])/%$1-$ufs/g
-      if defined $ufs && $ufs =~ /^(?:smartfilter.?|websense)$/;
-
-    # Login specific regexps
-    $self->{_regexp} =~ s/%u/%u-$login/g
-      if defined $login && $login =~ /^(?:ldap|username)$/;
-
-    # Multiple consecutive spaces are compressed to a single space
-    $self->{_regexp} =~ s/ +/ /g;
-}
-
-# for debugging purposes (very verbose...)
-#sub _postprocess {
-#    my $self = shift;
-#    $self->{_regexp} =~ s/\(\?\#\!([-\w]+)\)/(?#!$1)(?{ print "$1 "})/g;
-#}
 
 =head1 NAME
 
@@ -241,7 +46,7 @@ I<Port 80 Security Appliance>.
 See the Regexp::Log documentation for a description of the standard
 Regexp::Log interface.
 
-=head2 Streming media logs
+=head2 Streaming media logs
 
 This version of Regexp::Log::BlueCoat does not support streaming
 related logs. You will have to add the following line at the beginning
@@ -252,6 +57,163 @@ is configured to log those events.
 
 This will probably be faster than have the regular expression generated
 by the regexp() method fail on each streaming log line.
+
+=cut
+
+my $IP   = '\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}';
+my $HOST = '[-.\\w]+';
+
+# define the BlueCoat specific stuff
+%REGEXP = (
+
+    #%g %e %a %w/%s %b %m %i %u %H/%d %c %f %A
+    # %% - Denotes '%' character -
+    '%%' => '%',
+
+    # %a   c-ip Client IP address. Yes
+    '%a' => "(?#=c-ip)$IP(?#!c-ip)",
+
+    # %b   sc-bytes Number of bytes returned by the server (or the Cache).  Yes
+    '%b' => '(?#=sc-bytes)-|\\d+(?#!sc-bytes)',
+
+    # %c   cs (content-type) The type of object. Usually the MIME-type. No
+    '%c' => '(?#=cs-content-type)-|UNKNOWN|\\S+(?:/\\S+)?(?#!cs-content-type)',
+
+# %d   cs-supplier-name SUPPLIER NAME - Name or IP address of the server/cache from which the object was received.  Yes
+    '%d' => "(?#=cs-supplier-name)-|$HOST(?#!cs-supplier-name)",
+
+    # %e   time-taken Number of milliseconds request took to process.  Yes
+    '%e' => '(?#=time-taken)\\d+(?#!time-taken)',
+
+    # %f   sc-filter-category Filtering reason. Why it was denied (such as sex or business) No
+    # this is handled in _postprocess()
+    '%f' => '%f',
+
+    # %g    timestamp UNIX type timestamp. Yes
+    '%g' => '(?#=timestamp)\\d+\\.\\d+(?#!timestamp)',
+
+    # %h    c-ip Client Hostname (uses IP to avoid reverse DNS) - same as %a Yes
+    '%h' => "(?#=c-hostname)-|$HOST(?#!c-hostname)",
+
+# %i    cs-uri The requested URI. Note: Web trends expects this to be only cs-uri-stem + cs-uri-query No
+    '%i' => '(?#=cs-uri)-|\\S+://\\S+|.*?(?#!cs-uri)',
+
+    # %j    -  [Not used.] -
+    '%j' => '',
+
+# %l    - Client Identification string. (User Login name remote). - always '-' Yes
+# %m    cs-method HTTP method. HTTP methods include GET, PUT, POST, and so on.  Yes
+    '%m' =>
+'(?#=cs-method)-|OPTIONS|GET|HEAD|POST|PUT|DELETE|TRACE|CONNECT(?#!cs-method)',
+
+    # %n    - [Not used.] -
+    '%n' => '',
+
+    # %o    - [Not used.] -
+    '%o' => '',
+
+    # %p    r-port Port fetched from on host - origin server port Yes
+    '%p' => '(?#=r-port)\\d+(?#!r-port)',
+
+    # %q    - [Not used.] -
+    '%q' => '',
+
+# %r    cs-request-line First line of the request No
+# %s    sc-status The code returned by the cache to the client (HTTP code).  Yes
+    '%s' => '(?#=sc-status)\\d{1,3}(?#!sc-status)',
+
+# %t    gmttime GMT date and time of the user request, in the format [DD/MM/YYYY:hh:mm:ss GMT] Yes
+    '%t' =>
+'(?#=gmttime)-|\\[(?#=gmtday)\\d\\d(?#!gmtday)/(?#=gmtmonth)\\d\\d(?#!gmtmonth)/(?#=gmtyear)\\d\\d\\d\\d(?#!gmtyear):(?#=gmthour)\\d\\d(?#!gmthour):(?#=gmtminute)(?#!gmtminute):(?#=gmtsecond)(?#!gmtsecond) GMT\\](?#!gmttime)',
+
+    # %u    cs-username Authenticated user ID. Yes
+    '%u' => '(?### You must define \'login\' to use %u in format ###))',
+
+# %v    cs-host Name of host sourcing the object. Yes
+# %w    s-action What type of action did the CM take to process this request. NOTE: 'cached' is used by ELFF but has int value.  Yes
+    '%w' =>
+'(?#=s-action)(?:TCP_(?:CLIENT_REFRESH|DENIED|ERR_MISS|HIT|M(?:EM_HIT|ISS)|NC_MISS|PARTIAL_MISS|REFRESH_(?:HIT|MISS)|S(?:PLASHED|WAPFAIL)|TUNNELED)?|UDP_(?:DENIED|HIT|INVALID|MISS(?:_NOFETCH)?)?)(?#!s-action)',
+
+    # %x    date Date in YYYY-MM-DD format Yes
+    '%x' =>
+'(?#=date)(?#=year)\\d\\d\\d\\d(?#!year)-(?#=month)\\d\\d(?#!month)-(?#=day)\\d\\d(?#!day)(?#!date)',
+
+    # %y    time GMT time in HH:MM:SS format No
+    '%y' =>
+'(?#=time)(?#=hour)\\d\\d(?#!hour):(?#=minute)\\d\\d(?#!minute):(?#=second)\\d\\d(?#!second)(?#!time)',
+
+    # %z    - [Not used.] -
+    '%z' => '',
+
+    # %A    cs (user-agent) User agent No
+    '%A' => '(?#=user-agent).*(?#!user-agent)',
+
+    # %B    cs-bytes The number of bytes received by the server Yes
+    '%b' => '(?#=cs-bytes)\\d+(?#!cs-bytes)',
+
+# %C    cs (cookie) Cookie data No
+# %D    s-supplier-ip SUPPLIER IP - IP address of server/cache from which the object was received.  Yes
+# %E    s-Policy-Message Policy enforcement message Yes
+# %F    - [Not used.] -
+    '%F' => '',
+
+    # %G    - [Not used.] -
+    '%G' => '',
+
+# %H    s-hierarchy How and where the object was retrieved from the cache hierarchy (DIRECT from the server, PARENT_HIT = from the parent cache, and so on) No
+    '%H' =>
+'(?#=s-hierarchy)DIRECT|NONE|(?:PARENT|SIBLING)_HIT|FIRST_PARENT_MISS(?#!s-hierarchy)',
+
+# %I    s-ip Server IP, the IP address of the server on which the log entry was generated Yes
+# %J    - [Not used.] -
+    '%J' => '',
+
+    # %K    - [Not used.] -
+    '%K' => '',
+
+# %L    localtime Local date and time of the user request in format: [DD/MMM/YYYY:hh:mm:ss +nnnn] Yes
+    '%L' =>
+'\\[(?#=localtime)(?#=localday)\\d\\d(?#!localday)/(?#=localmonth)\\d\\d(?#!localmonth)/(?#=localyear)\\d\\d\\d\\d(?#!localyear):(?#=localhour)\\d\\d(?#!localhour):(?#=localminute)\\d\\d(?#!localminute):(?#=localsecond)\\d\\d(?#!localsecond) \\+\\d\\d\\d\\d(?#!localtime)\\]',
+
+    # %M    - [Not used.] -
+    '%M' => '',
+
+# %N    s-computername Server name, the name of the server on which the log entry was generated Yes
+    '%N' => "(?#=s-computername)$HOST(?#!s-computername)",
+
+    # %O    - [Not used.] -
+    '%O' => '',
+
+    # %P    s-port Server port, the port number the client is connected to.  Yes
+    '%P' => '(?#=s-port)\\d+(?#!s-port)',
+
+# %Q    cs-uri-query The URI query portion of the URL No
+# %R    cs (Referer) Request referrer No
+# %S    s-sitename Internet service and instance number running on client computer Yes
+# %T    duration Elapsed time, seconds Yes
+    '%T' => '(?#=duration)\\d+(?#!duration)',
+
+# %U    cs-uri-stem Object path from request URL Yes
+# %V    cs-version The protocol (HTTP, FTP) version used by the client.  Yes
+# %W    sc-filter-result UFS event (May differ between Websense or SmartFilter or others).  No
+    # this is handled in _postprocess() and is unsupported yet
+    '%W' => '',
+
+# %X    cs (X-Forwarded-For) The IP address of the device which sent the HTTP request.  No
+# %Y    - [Not used.] -
+    '%Y' => '',
+
+    # %Z    - [Not used.] -
+    '%Z' => '',
+
+    # UFS specific
+    # Smartfilter
+
+    # Login specific
+    '%u-username' => '(?#=cs-username)[-.\\w]+(?#!cs-username)',
+    '%u-ldap'     =>
+      '(?#=cs-username)-|(?:[A-Za-z]+=[^,]*,)*[A-Za-z]=[^,]*?(?#!cs-username)',
+);
 
 =head1 METHODS
 
@@ -270,6 +232,13 @@ Regexp::Log::BlueCoat only support I<SmartFilter> UFS in this version.
 The appropriate accessors are defined for them (if used to set, they
 return the new value for the attribute).
 
+=over 4
+
+=item ufs()
+
+Get/set the URL Filter System type (C<%f> and C<%W>).
+Only C<smartfilter> is supported in this version.
+
 =cut
 
 sub ufs {
@@ -277,6 +246,65 @@ sub ufs {
     $self->{ufs} = shift if @_;
     return $self->{ufs};
 }
+
+=item ufs_category( category => string, [...] )
+
+This method lets you override the default category names in your UFS.
+
+For example, I<SmartFilter> allows to configure the name of the
+categories; Regexp::Log::BlueCoat supports the default category names,
+but lets you override them if needed.
+
+The changes are applied on the objet current C<ufs>.
+
+    $log->ufs('smartfilter');
+    $log->ufs_category( hm => 'FunStuff' );    # change the Humor category
+
+See L<URL FILTERING SYSTEMS> for details about the category names.
+
+=item ufs_category( ufs_name, category => string, [...] )
+
+This method can also be called as a class method.
+
+If you'd rather change the UFS category names for every
+Regexp::Log::BlueCoat that will be created, you can use the
+method as a class method.
+
+You'll need to tell ufs_category() on which UFS to apply these
+modifications.
+
+    Regexp::Log::BlueCoat->ufs_category(
+        'smartfilter',
+        hm => 'Fun',      # change the Humor category
+        mp => 'Music',    # change the MP3 category
+    );
+
+These changes will be on for any new Regexp::Log::Object you'll create.
+
+=cut
+
+sub ufs_category {
+    my $self = shift;
+
+    if ( ref $self ) {
+        my %ufs = @_;
+        @{ $self->{_ufs}{ $self->{ufs} } }{ keys %ufs } = values %ufs;
+    }
+    else {
+        my $ufs = shift;
+        my %ufs = @_;
+        @{ $UFS{$ufs} }{ keys %ufs } = values %ufs;
+    }
+}
+
+=item login()
+
+Get/set the user login type (C<%u>).
+
+This version supports C<username> (standard bareword) and C<ldap>
+(standard C<CN=John Smith,O=Company,...> form).
+
+=cut
 
 sub login {
     my $self = shift;
@@ -317,6 +345,15 @@ Short name: C<:iis>
 Format string: C<%a, -, %x, %y, %S, %N, %I, %e, %b, %B, %s, 0, %m, %U, ->
 
 =back
+
+=cut
+
+%FORMAT = (
+    ':squid' => '%g %e %a %w/%s %b %m %i %u %H/%d %c',
+    ':clf'   => '%h %l %u %t "%r" %s %b',
+    ':elf'   => '%h %l %u %L "%r" %s %b "%R" "%A"',
+    ':iis'   => '%a, -, %x, %y, %S, %N, %I, %e, %b, %B, %s, 0, %m, %U, -',
+);
 
 =head1 FIELDS
 
@@ -381,7 +418,192 @@ space character N/A Multiple consecutive spaces are compressed to a single space
  %X    cs (X-Forwarded-For) The IP address of the device which sent the HTTP request.  No
  %Y    - [Not used.] -
  %Z    - [Not used.] -
+
+=head1 URL FILTERING SYSTEMS
+
+The BlueCoat Systems Port 80 Security Appliance supports two URL Filtering
+Systems (UFS): I<SmartFilter> and I<Websens>.
+
+Since I only had access to log files generated with a BlueCoat + SmartFilter
+combination, this version of Regexp::Log only supports I<SmartFilter> UFS.
+Patches welcome!
+
+=head2 Smartfilter
+
+When C<ufs> is set to C<smartfilter>, the computed regular expression
+matches the default SmartFilter category names. These can be changed 
+in SmartFilter's configuration (furthermore  one can create one's own
+categories, with user-defined names).
+
+So we need to be able to modify the category names, either in an
+object instance, or in class data (shared by all instances).
+
+To compute a regular expression that matches your specific fields, there
+are several possibilities:
+
+=over 4
+
+=item Use ufs_category()
+
+The method ufs_category() lets you replace any standard category by
+your own, and even add new "categories" (read: text that will be
+matched by the C<%f> fields).
+
+These changes are valid for the 
+
+See ufs_category() for details.
+
+=item Chanfe
+
+
+I<SmartFilter> default categories are:
+
+ Key  Default value                        Category
+ ---  -------------                        --------
+ sx   "sex"                                Sex
+ dr   "drugs"                              Drugs
+ hs   "hate speech"                        Hate Speech
+ cs   "crim. skills"                       Criminal Skills
+ nd   "nudity"                             Nudity
+ os   "on-line sales"                      Online Sales
+ gb   "gambling"                           Gambling
+ pp   "personal pages"                     Personnal Pages
+ js   "job search"                         Job Search
+ sp   "sports"                             Sports
+ gm   "games"                              Games
+ hm   "humor"                              Humor
+ mp   "MP3 sites"                          MP3 Sites
+ et   "entertainment"                      Entertainment
+ ls   "lifestyle"                          Lifestyle
+ ex   "extreme"                            Extreme
+ ch   "chat"                               Chat
+ in   "investing"                          Investing
+ nw   "general news"                       General News
+ po   "politics, opinion, religion"        Politics, Opinion, Religion
+ mm   "dating"                             Dating
+ ac   "art/culture"                        Art/Culture
+ na   "usenet news access"                 Usenet News Access
+ oc   "cults/occult"                       Cults/Occult
+ na   "Usenet News"                        Usenet News
+ sh   "self help"                          Self-Help
+ tr   "travel"                             Travel
+ mt   "mature"                             Mature
+ wm   "webmail"                            Webmail
+ ps   "portal sites"                       Portal Sites
+ an   "anonymizer/translator"              Anonymizer/Translator
+ u0   "user defined category 0"            First User-defined Category
+ u1   "user defined category 1"            Second User-defined Category
+ u2   "user defined category 2"            Third User-defined Category
+ u3   "user defined category 3"            Fourth User-defined Category
+ u4   "user defined category 4"            Fifth User-defined Category
+ u5   "user defined category 5"            Sixth User-defined Category
+ u6   "user defined category 6"            Seventh User-defined Category
+ u7   "user defined category 7"            Eighth User-defined Category
+ u8   "user defined category 8"            Ninth User-defined Category
+ u9   "user defined category 9"            Tenth User-defined Category
+
+Regexp::Log::BlueCoat add the following three categories:
+
+ Key             Default value                  Category
+ ---             -------------                  --------
+ none            "-"                            None
+ uncategorized   "uncategorized"                Uncategorized
+ not_applied     "content_filter_not_applied"   Filter not applied
+
+=head2 Websense
+
+I<Websense> is not supported yet.
+
+=back
+
+=cut
+
+%UFS = (
+    smartfilter => {
+        none               => '-',
+        uncategorized      => 'uncategorized',
+        filter_not_applied => 'content_filter_not_applied',
+        sx                 => "sex",
+        dr                 => "drugs",
+        hs                 => "hate speech",
+        cs                 => "crim. skills",
+        nd                 => "nudity",
+        os                 => "on-line sales",
+        gb                 => "gambling",
+        pp                 => "personal pages",
+        js                 => "job search",
+        sp                 => "sports",
+        gm                 => "games",
+        hm                 => "humor",
+        mp                 => "MP3 sites",
+        et                 => "entertainment",
+        ls                 => "lifestyle",
+        ex                 => "extreme",
+        ch                 => "chat",
+        in                 => "investing",
+        nw                 => "general news",
+        po                 => "politics, opinion, religion",
+        mm                 => "dating",
+        ac                 => "art/culture",
+        na                 => "usenet news access",
+        oc                 => "cults/occult",
+        na                 => "Usenet News",
+        sh                 => "self help",
+        tr                 => "travel",
+        mt                 => "mature",
+        wm                 => "webmail",
+        ps                 => "portal sites",
+        an                 => "anonymizer/translator",
+        u0                 => "user defined category 0",
+        u1                 => "user defined category 1",
+        u2                 => "user defined category 2",
+        u3                 => "user defined category 3",
+        u4                 => "user defined category 4",
+        u5                 => "user defined category 5",
+        u6                 => "user defined category 6",
+        u7                 => "user defined category 7",
+        u8                 => "user defined category 8",
+        u9                 => "user defined category 9",
+    },
+    websense => {},
+);
  
+%DEFAULT = (
+    format  => '',
+    capture => [],
+    ufs     => '',
+    login   => '',
+    _ufs    => { map { ($_, {} ) } keys %UFS },
+);
+
+sub _preprocess {
+    my $self  = shift;
+    my $login = $self->{login};
+
+    # Login specific regexps
+    $self->{_regexp} =~ s/%u/%u-$login/g
+      if defined $login && $login =~ /^(?:ldap|username)$/;
+
+    # Multiple consecutive spaces are compressed to a single space
+    $self->{_regexp} =~ s/ +/ /g;
+}
+
+sub _postprocess {
+    my $self = shift;
+    my $ufs  = $self->{ufs};
+
+    # UFS specific regexps
+    if ( defined $ufs and $ufs ne '' ) {
+use Data::Dumper; print Dumper \%UFS;
+        my %categories = ( %{ $UFS{$ufs} }, %{ $self->{_ufs}{$ufs} } );
+        my $categories =
+          '(?#=sc-filter-category)'
+          . join ( '|', sort values %categories )
+          . '(?#!sc-filter-category)';
+        $self->{_regexp} =~ s/%f/$categories/g;
+    }
+}
+
 =head1 TODO
 
 Support BlueCoat's standard formats: NCSA common log format,
@@ -407,6 +629,9 @@ and send the resulting file to me.
 
 Blue Coat Systems Port 80 Security Appliance, I<Configuration and Management
 Guide>: http://www.bluecoat.com/downloads/manuals/BC_Config_Mgmt_Guide.pdf
+
+Secure Computing Smartfilter, I<Installation & Configuration Guide>,
+version 3.1.2: http://www.securecomputing.com/pdf/SFConfig312_IC_RevE.pdf
 
 =head1 THANKS
 
