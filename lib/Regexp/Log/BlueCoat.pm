@@ -278,6 +278,12 @@ sub ufs {
     return $self->{ufs};
 }
 
+sub login {
+    my $self = shift;
+    $self->{login} = shift if @_;
+    return $self->{login};
+}
+
 =head1 PREDEFINED FORMATS
 
 Regexp::Log::BlueCoat supports several standards log formats.
