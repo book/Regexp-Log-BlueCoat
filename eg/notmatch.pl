@@ -32,11 +32,12 @@ print << "EOT";
 #
 # Captured fields: @fields
 #
+# The following log lines did not match:
 EOT
 
 while (<>) {
+    # ignore streaming media for now
     next if /^(?:Windows_Media|<RealMedia>)/;
     my %data;
     @data{@fields} = (m/$re/og) or print;
-    print "\n#\n";
 }
