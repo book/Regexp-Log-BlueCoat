@@ -12,3 +12,4 @@
 1039302017.034 2 192.168.71.137 TCP_NC_MISS/200 116 GET https://econf.qsdf.com/ - DIRECT/- - content_filter_not_applied -
 1039302020.911 2 10.0.203.16 TCP_DENIED/407 3309 GET http://adverts.mp3dancer.com/phps_application/advertisingupdate_7.php3?domain=FavoriteLinksMP3Dancer&localdate=1039301994 - DIRECT/- - Mature Totem
 1039302022.732 334 10.0.203.16 TCP_NC_MISS/200 316 POST http://shttp.msg.yahoo.com/notify/ CN=Nicolas BOURBAKI,OU=fr,O=company DIRECT/shttp.msg.yahoo.com text/plain Portal_Sites Mozilla/4.01 [en] (Win95; I)
+1039424947.214 19 192.186.203.16 TCP_ERR_MISS/503 3100 GET http:// bug0bus0.free.fr/es_fichiers/tn_ak_01.jpg CN=Tom BOMBADIL,OU=fr,O=tolkien DIRECT/- - Portal_Sites Mozilla/5.0 (Windows; U; WinNT4.0; en-US; rv:1.2.1) Gecko/20021130
