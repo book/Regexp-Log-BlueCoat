@@ -311,6 +311,8 @@ sub login {
     return $self->{login};
 }
 
+=back
+
 =head1 PREDEFINED FORMATS
 
 Regexp::Log::BlueCoat supports several standards log formats.
@@ -544,8 +546,6 @@ Regexp::Log::BlueCoat add the following three categories:
 =head2 Websense
 
 I<Websense> is not supported yet.
-
-=back
 
 =cut
 
