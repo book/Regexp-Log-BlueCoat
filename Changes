@@ -1,7 +1,9 @@
 Revision history for Perl extension Regexp::Log::BlueCoat
 
-0.03
+0.03  Mon Mar 28 02:37:15 CEST 2005
         - small change in the host related regexp
+        - the status code may be 4 digit long
+        - added test files for pod (for Kwalitee)
 
 0.02  Mon Jan 20 18:48:53 CET 2003
         - ufs_category() now returns the (class or instance) specific
