@@ -326,8 +326,6 @@ with the format() method.
  NCSA extended log format  :elf    %h %l %u %L "%r" %s %b "%R" "%A"
  Microsoft IIS format      :iis    %a, -, %x, %y, %S, %N, %I, %e, %b, %B, %s, 0, %m, %U, -
 
-=back
-
 =cut
 
 %FORMAT = (
